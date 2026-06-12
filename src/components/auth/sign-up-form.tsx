@@ -44,7 +44,7 @@ const SignUpForm = () => {
   const {isSubmitting}=form.formState
 
   async function onSubmit(data: SignUpInput) {
-    const res= authClient.signUp.email({
+    await authClient.signUp.email({
       ...data
     },{
       onError:error=>{
