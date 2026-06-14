@@ -1,9 +1,11 @@
-"use client";
-
+"use client"
 import React, { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-
+import { authClient } from "@/lib/auth-client";
+import { toast } from "sonner";
+import { useRouter,useSearchParams } from "next/navigation";
+import { ResetPasswordInput,resetPasswordSchema } from "@/validators/auth.validator";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -18,56 +20,43 @@ import {
   FieldLabel,
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-
-import { SignInInput, signInSchema } from "@/validators/auth.validator";
-
 import { Eye, EyeOff } from "lucide-react";
-import Image from "next/image";
-import { authClient } from "@/lib/auth-client";
-import { toast } from "sonner";
-import { useRouter } from "next/navigation";
 
-const SignInForm = () => {
-  const [showPassword, setShowPassword] = useState(false);
-  const router=useRouter();
-  const form = useForm<SignInInput>({
-    resolver: zodResolver(signInSchema),
-    mode: "onChange",
-    defaultValues: {
-      email: "",
-      password: "",
-    },
-  });
 
-  async function onSubmit(data: SignInInput) {
-    await authClient.signIn.email({
-       email: data.email,
-       password: data.password,
-    },{
-      onError:error=>{
-        if (error.error.code==="EMAIL_NOT_VERIFIED") {
-            router.push(`/verify-user-pending?email=${encodeURIComponent(data.email)}`);
+
+const ResetPasswordPage = () => {
+    const [showPassword,setShowPassword]=useState(false);
+    const [showConfirmPassword,setShowConfirmPassword]=useState(false);
+    const searchParams=useSearchParams()
+    const token=searchParams.get("token")!;
+    const router=useRouter();
+    const form=useForm<ResetPasswordInput>({
+        resolver:zodResolver(resetPasswordSchema),
+        mode:"onChange",
+        defaultValues:{
+            password:"",
+            confirmPassword:""
         }
-        toast.error(error.error.message || "Failed to sign in")
-      },
-      onSuccess:(ctx)=>{
-         toast.success(ctx.data?.message || "Sign in successfull");
-          router.push("/");
-      }
-    });
-  }
-
-  // google oauth login
-    const handleGoogleLogin=async()=>{
-      await authClient.signIn.social({
-        provider:"google",
-        callbackURL:"/"
-      })
+    })
+    const {isSubmitting}=form.formState;
+    async function onSubmit(data:ResetPasswordInput) {
+        await authClient.resetPassword({
+            newPassword:data.password,
+            token
+        },{
+           onError:error=>{
+              toast.error(error.error.message || "Password reset failed");
+           }, 
+            onSuccess:(ctx)=>{
+              toast.success(ctx.data?.message || "Password reset successful");
+              router.push("/auth/login");
+            }
+        })
+        
     }
-
   return (
     <Card className="w-full border-0 shadow-none bg-transparent">
-     <CardHeader className="space-y-6 px-0">
+     <CardHeader className="space-y-6  px-0">
   <div className="space-y-1">
     <CardTitle className="text-4xl font-bold tracking-tight">
       Command Inbox
@@ -80,12 +69,12 @@ const SignInForm = () => {
 
   <div className="space-y-2">
     <h2 className="text-3xl font-bold tracking-tight">
-      Welcome back
+      Create your account
     </h2>
 
     <p className="max-w-sm text-sm text-muted-foreground">
-      Sign in to access your inbox, calendar, AI assistant
-      and workflow dashboard.
+      Join Command Inbox and take control of your emails,
+      meetings and productivity.
     </p>
   </div>
 </CardHeader>
@@ -97,49 +86,15 @@ const SignInForm = () => {
         >
           <div className="space-y-5">
             <FieldGroup>
-              <Controller
-                name="email"
-                control={form.control}
-                render={({ field, fieldState }) => (
-                  <Field data-invalid={fieldState.invalid}>
-                    <FieldLabel htmlFor={field.name}>
-                      Email Address
-                    </FieldLabel>
-
-                    <Input
-                      {...field}
-                      id={field.name}
-                      type="email"
-                      placeholder="john@example.com"
-                      aria-invalid={fieldState.invalid}
-                      className="h-12 rounded-xl"
-                    />
-
-                    {fieldState.invalid && (
-                      <FieldError errors={[fieldState.error]} />
-                    )}
-                  </Field>
-                )}
-              />
 
               <Controller
                 name="password"
                 control={form.control}
                 render={({ field, fieldState }) => (
                   <Field data-invalid={fieldState.invalid}>
-                    <div className="flex items-center justify-between">
-                      <FieldLabel htmlFor={field.name}>
-                        Password
-                      </FieldLabel>
-
-                      <button
-                        type="button"
-                        className="text-xs text-primary hover:underline cursor-pointer"
-                        onClick={()=>router.push("/auth/forgot-password")}
-                      >
-                        Forgot Password?
-                      </button>
-                    </div>
+                    <FieldLabel htmlFor={field.name}>
+                      Password
+                    </FieldLabel>
 
                     <div className="relative">
                       <Input
@@ -172,14 +127,56 @@ const SignInForm = () => {
                   </Field>
                 )}
               />
+
+              <Controller
+                name="confirmPassword"
+                control={form.control}
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid}>
+                    <FieldLabel htmlFor={field.name}>
+                      Password
+                    </FieldLabel>
+
+                    <div className="relative">
+                      <Input
+                        {...field}
+                        id={field.name}
+                        type={showConfirmPassword ? "text" : "password"}
+                        placeholder="••••••••"
+                        aria-invalid={fieldState.invalid}
+                        className="h-12 rounded-xl pr-10"
+                      />
+
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setShowConfirmPassword((prev) => !prev)
+                        }
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground transition-colors hover:text-foreground cursor-pointer"
+                      >
+                        {showConfirmPassword ? (
+                          <EyeOff className="h-4 w-4" />
+                        ) : (
+                          <Eye className="h-4 w-4" />
+                        )}
+                      </button>
+                    </div>
+
+                    {fieldState.invalid && (
+                      <FieldError errors={[fieldState.error]} />
+                    )}
+                  </Field>
+                )}
+              />
             </FieldGroup>
           </div>
 
           <Button
             type="submit"
             className="h-12 w-full rounded-xl font-medium cursor-pointer"
+            disabled={isSubmitting}
           >
-            Sign In
+            Reset Password
           </Button>
 
           <div className="relative">
@@ -193,39 +190,21 @@ const SignInForm = () => {
               </span>
             </div>
           </div>
-
-          <Button
-  type="button"
-  variant="outline"
-  className="h-12 w-full rounded-xl cursor-pointer"
-  onClick={handleGoogleLogin}
->
-  <Image
-    src="/google.svg"
-    alt="Google"
-    className="h-4 w-4"
-    width={50}
-    height={20}
-  />
-
-  <span className="ml-2">
-    Continue with Google
-  </span>
-</Button>
         </form>
 
         <div className="pt-6 text-center text-sm text-muted-foreground">
-          Don&apos;t have an account?{" "}
+          Go back to
           <button
             type="button"
             className="font-medium text-primary hover:underline cursor-pointer"
+            onClick={()=>router.push("/auth/login")}
           >
-            Sign Up
+            Sign In
           </button>
         </div>
       </CardContent>
     </Card>
-  );
-};
+  )
+}
 
-export default SignInForm;
+export default ResetPasswordPage;

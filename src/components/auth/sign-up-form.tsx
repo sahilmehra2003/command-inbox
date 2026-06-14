@@ -30,7 +30,9 @@ import { useRouter } from "next/navigation";
 
 
 const SignUpForm = () => {
+ 
   const [showPassword, setShowPassword] = useState(false);
+  
   const router=useRouter()
   const form = useForm<SignUpInput>({
     resolver: zodResolver(signUpSchema),
@@ -45,14 +47,26 @@ const SignUpForm = () => {
 
   async function onSubmit(data: SignUpInput) {
     await authClient.signUp.email({
-      ...data
+      ...data,
     },{
       onError:error=>{
         toast.error(error.error.message || "Failed to sign up")
       },
-      onSuccess:()=>{
-        toast.success("Account created successfully");
-        router.push("/login");
+      onSuccess:(ctx)=>{
+        toast.success( ctx.data?.message || "Account created successfully");
+        router.push(`/auth/verify-user-pending?email=${encodeURIComponent(data.email)}`);
+      }
+    })
+  }
+
+  // google oauth login
+  const handleGoogleLogin=async()=>{
+    await authClient.signIn.social({
+      provider:"google",
+      callbackURL:"/"
+    },{
+      onError:error=>{
+        toast.error(error.error.message || "Google Login failed")
       }
     })
   }
@@ -163,7 +177,7 @@ const SignUpForm = () => {
                         onClick={() =>
                           setShowPassword((prev) => !prev)
                         }
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground transition-colors hover:text-foreground"
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground transition-colors hover:text-foreground cursor-pointer"
                       >
                         {showPassword ? (
                           <EyeOff className="h-4 w-4" />
@@ -184,7 +198,7 @@ const SignUpForm = () => {
 
           <Button
             type="submit"
-            className="h-12 w-full rounded-xl font-medium"
+            className="h-12 w-full rounded-xl font-medium cursor-pointer"
             disabled={isSubmitting}
           >
             Create Account
@@ -202,10 +216,11 @@ const SignUpForm = () => {
             </div>
           </div>
 
-           <Button
+<Button
   type="button"
   variant="outline"
-  className="h-12 w-full rounded-xl"
+  className="h-12 w-full rounded-xl cursor-pointer"
+  onClick={handleGoogleLogin}
 >
   <Image
     src="/google.svg"
@@ -225,7 +240,7 @@ const SignUpForm = () => {
           Already have an account?{" "}
           <button
             type="button"
-            className="font-medium text-primary hover:underline"
+            className="font-medium text-primary hover:underline cursor-pointer"
           >
             Sign In
           </button>
