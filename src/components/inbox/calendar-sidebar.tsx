@@ -1,19 +1,23 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Calendar } from "@/components/ui/calendar";
 import { CalendarEvent } from "@/lib/corsair/corsair-calendar-service";
 import { Button } from "@/components/ui/button";
+import { enUS } from "react-day-picker/locale/en-US";
+import { format } from "date-fns";
 
 interface CalendarSidebarProps {
   events: CalendarEvent[];
 }
 
-const CalendarSidebar = ({
+const CalendarSidebar = ({  
   events,
 }: CalendarSidebarProps) => {
+    
+
   const [selectedDate, setSelectedDate] =
-    useState<Date>(new Date());
+  useState<Date | undefined>(new Date());
 
   const sortedEvents = useMemo(
     () =>
@@ -59,6 +63,7 @@ const CalendarSidebar = ({
         <Calendar
           mode="single"
           selected={selectedDate}
+          locale={enUS}
           onSelect={(date) =>
             date && setSelectedDate(date)
           }
@@ -71,7 +76,7 @@ const CalendarSidebar = ({
         {/* Today's Events */}
         <div className="p-4">
           <h3 className="mb-3 text-sm font-medium">
-            Today's Events
+            Today&apos;s Events
           </h3>
 
           <div className="space-y-2">
@@ -97,12 +102,7 @@ const CalendarSidebar = ({
                     </p>
 
                     <p className="text-xs text-muted-foreground">
-                      {new Date(
-                        event.start
-                      ).toLocaleTimeString([], {
-                        hour: "numeric",
-                        minute: "2-digit",
-                      })}
+                      {format(new Date(event.start), "h:mm a")}
                     </p>
                   </div>
                 </button>
@@ -140,9 +140,7 @@ const CalendarSidebar = ({
                     </p>
 
                     <p className="text-xs text-muted-foreground">
-                      {new Date(
-                        event.start
-                      ).toLocaleDateString()}
+                      {format(new Date(event.start), "MMM d, yyyy")}
                     </p>
                   </div>
                 </button>

@@ -25,6 +25,43 @@ interface GmailMessageMetadata {
     formattedDate: string;
 }
 
+export interface GmailAttachment {
+    filename: string;
+    mimeType: string;
+    size: number;
+}
+
+export interface GmailMessageDetail {
+    id: string;
+    threadId?: string;
+
+    from: string;
+    senderName: string;
+    senderEmail: string
+
+    to: string;
+    cc?: string;
+
+    subject: string;
+
+    snippet: string;
+
+    internalDate?: string | number | Date | null;
+    formattedDate?: string;
+
+    htmlBody?: string;
+    textBody?: string;
+
+    attachments: GmailAttachment[];
+
+    isUnread: boolean;
+    isArchived: boolean;
+    isStarred: boolean
+    isImportant: boolean
+    isSpam?: boolean;
+
+}
+
 export interface ThreadMessage {
     id: string;
     threadId?: string;
@@ -47,6 +84,8 @@ export interface ThreadDetails {
 
 export interface SendEmailInput {
     to: string | string[];
+    cc?: string | string[];
+    bcc?: string | string[];
     subject: string;
     body: string;
     contentType?: string
@@ -110,79 +149,228 @@ export function extractMessageMetadata(message: any): GmailMessageMetadata {
     };
 }
 
+export function getHeader(
+    headers: any[],
+    name: string
+): string {
+    return (
+        headers.find(
+            (header) =>
+                header.name?.toLowerCase() ===
+                name.toLowerCase()
+        )?.value ?? ""
+    );
+}
+
+export function decodeBase64Url(
+    data?: string
+): string {
+    if (!data) return "";
+
+    return Buffer.from(
+        data.replace(/-/g, "+").replace(/_/g, "/"),
+        "base64"
+    ).toString("utf-8");
+}
+
+function extractSenderEmail(headerValue: string): string {
+    const emailRegex = /<([^>]+)>/;
+    const match = headerValue.match(emailRegex);
+
+    // Return the captured group if found, otherwise return the original string 
+    // (or null, depending on your error handling preference)
+    return match ? match[1] : headerValue;
+}
+
+export function extractMessageDetail(
+    message: any
+): Omit<
+    GmailMessageDetail,
+    | "id"
+    | "threadId"
+    | "snippet"
+    | "internalDate"
+    | "isUnread"
+> {
+    const headers =
+        message.payload?.headers ?? [];
+
+    const from = getHeader(headers, "From");
+    const to = getHeader(headers, "To");
+    const cc = getHeader(headers, "Cc");
+    const subject = getHeader(
+        headers,
+        "Subject"
+    );
+
+    const senderName = from.includes("<")
+        ? from.split("<")[0].trim()
+        : from;
+
+    const formattedDate =
+        message.internalDate
+            ? new Date(
+                Number(message.internalDate)
+            ).toLocaleString()
+            : "";
+
+    const parts =
+        message.payload?.parts ?? [];
+
+    const htmlPart = parts.find(
+        (part: any) =>
+            part.mimeType === "text/html"
+    );
+
+    const textPart = parts.find(
+        (part: any) =>
+            part.mimeType === "text/plain"
+    );
+
+    const htmlBody = decodeBase64Url(
+        htmlPart?.body?.data
+    );
+
+    const textBody = decodeBase64Url(
+        textPart?.body?.data
+    );
+
+    const attachments = parts
+        .filter(
+            (part: any) =>
+                part.filename &&
+                part.filename.length > 0
+        )
+        .map((part: any) => ({
+            filename: part.filename,
+            mimeType: part.mimeType,
+            size: part.body?.size ?? 0,
+        }));
+
+    const cleanedHtml: string = message.htmlBody
+        ?.replace(/<!doctype[^>]*>/gi, "")
+        ?.replace(/<html[^>]*>/gi, "")
+        ?.replace(/<\/html>/gi, "")
+        ?.replace(/<head[\s\S]*?<\/head>/gi, "")
+        ?.replace(/<body[^>]*>/gi, "")
+        ?.replace(/<\/body>/gi, "");
+
+    return {
+        from,
+        senderName,
+        senderEmail: extractSenderEmail(from)!,
+        to,
+        cc,
+        subject,
+        formattedDate,
+        htmlBody: cleanedHtml,
+        textBody,
+        attachments,
+    };
+}
+
 export const getTenantMessageList = async (
-    tenantId: string
+  tenantId: string,
+  q?:string
 ): Promise<InboxMessageListResponse> => {
-    const tenant = await getTenant(tenantId);
+  const tenant = await getTenant(tenantId);
 
-    if (!tenant) {
-        throw new Error("Corsair account not found");
-    }
-
-    const response = await tenant.gmail.api.messages.list({
-        maxResults: 10,
-        includeSpamTrash: false,
+  if (!tenant) {
+    throw new Error("Corsair account not found");
+  }
+  const response =
+    await tenant.gmail.api.messages.list({
+      maxResults: 10,
+      includeSpamTrash: q?.includes("in:spam") || q?.includes("in:trash"),
+      q,
     });
 
-    const messages = await Promise.all(
-        (response.messages ?? []).map(async (message) => {
-            const fullMessage = await tenant.gmail.api.messages.get({
-                id: message.id!,
-            });
+   
+  const messages = await Promise.all(
+    (response.messages ?? []).map(
+      async (message) => {
+        const fullMessage =
+          await tenant.gmail.api.messages.get({
+            id: message.id!,
+          });
 
-            const { senderName, subject, formattedDate } = extractMessageMetadata(fullMessage)
+        const {
+          senderName,
+          subject,
+          formattedDate,
+        } = extractMessageMetadata(
+          fullMessage
+        );
+        return {
+          id: fullMessage.id ?? "",
+          threadId: fullMessage.threadId,
+          from: senderName,
+          subject,
+          snippet:
+            fullMessage.snippet ?? "",
+          internalDate:
+            fullMessage.internalDate,
+          formattedDate,
+          isUnread:
+            fullMessage.labelIds?.includes(
+              "UNREAD"
+            ) ?? false,
+        };
+      }
+    )
+  );
 
-
-            return {
-                id: fullMessage.id ?? "",
-                threadId: fullMessage.threadId,
-                from: senderName,
-                subject,
-                snippet: fullMessage.snippet ?? "",
-                internalDate: fullMessage.internalDate,
-                formattedDate,
-                isUnread:
-                    fullMessage.labelIds?.includes("UNREAD") ?? false,
-            };
-        }));
-    return {
-        messages,
-        nextPageToken: response.nextPageToken,
-        resultSizeEstimate: response.resultSizeEstimate,
-    };
-
-}
+  return {
+    messages,
+    nextPageToken:
+      response.nextPageToken,
+    resultSizeEstimate:
+      response.resultSizeEstimate,
+  };
+};
 
 
 export const getMessageById = async (
     tenantId: string,
     messageId: string
-): Promise<InboxMessage> => {
-    const tenant = await getTenant(tenantId);
+): Promise<GmailMessageDetail> => {
+    const tenant = await getTenant(
+        tenantId
+    );
 
-    const message = await tenant.gmail.api.messages.get({
-        id: messageId,
-    });
+    const message =
+        await tenant.gmail.api.messages.get({
+            id: messageId,
+        });
+
 
     if (!message) {
-        throw new Error("Message not found");
+        throw new Error(
+            "Message not found"
+        );
     }
 
-    const {
-        senderName,
-        subject,
-        formattedDate,
-    } = extractMessageMetadata(message);
+    const detail =
+        extractMessageDetail(message);
+
+    const labels = message.labelIds ?? [];
+    const isStarred = labels.includes("STARRED");
+    const isArchived = !labels.includes("INBOX");
+    const isUnread = labels.includes("UNREAD");
+    const isImportant = labels.includes("IMPORTANT")
+    const isSpam=labels.includes("SPAM") ?? false;
 
     return {
         id: message.id ?? "",
         threadId: message.threadId,
-        from: senderName,
-        subject,
+        ...detail,
         snippet: message.snippet ?? "",
         internalDate: message.internalDate,
-        formattedDate,
-        isUnread: message.labelIds?.includes("UNREAD") ?? false,
+        isUnread,
+        isArchived,
+        isStarred,
+        isImportant,
+        isSpam
     };
 };
 
@@ -211,6 +399,8 @@ export const starMessage = async (tenantId: string, messageId: string) => await 
 export const unstarMessage = async (tenantId: string, messageId: string) => await modifyMessageLabels(tenantId, messageId, { removeLabelIds: ["STARRED"], });
 export const markImportant = async (tenantId: string, messageId: string) => await modifyMessageLabels(tenantId, messageId, { addLabelIds: ["IMPORTANT"], });
 export const unMarkImportant = async (tenantId: string, messageId: string) => await modifyMessageLabels(tenantId, messageId, { removeLabelIds: ["IMPORTANT"], });
+export const spamMessage = async (tenantId: string, messageId: string) => await modifyMessageLabels(tenantId, messageId, { addLabelIds: ["SPAM"], });
+export const removeSpam = async (tenantId: string, messageId: string) => await modifyMessageLabels(tenantId, messageId, { removeLabelIds: ["SPAM"], });
 
 
 // bulk message actions
@@ -276,25 +466,43 @@ const toBase64Url = (input: string): string => {
 };
 
 export const buildRawEmail = ({
-    to,
-    subject,
-    body,
-    contentType = "text/plain"
+  to,
+  cc,
+  bcc,
+  subject,
+  body,
+  contentType = "text/plain",
 }: SendEmailInput): string => {
-    const recipients = Array.isArray(to)
-        ? to.join(", ")
-        : to;
+  const recipients = Array.isArray(to)
+    ? to.join(", ")
+    : to;
 
-    const mime = [
-        `To: ${recipients}`,
-        `Subject: ${subject}`,
-        "MIME-Version: 1.0",
-        contentType,
-        "",
-        body,
-    ].join("\r\n");
+  const ccRecipients = cc
+    ? Array.isArray(cc)
+      ? cc.join(", ")
+      : cc
+    : null;
 
-    return toBase64Url(mime);
+  const bccRecipients = bcc
+    ? Array.isArray(bcc)
+      ? bcc.join(", ")
+      : bcc
+    : null;
+
+  const mimeLines = [
+    `To: ${recipients}`,
+    ...(ccRecipients ? [`Cc: ${ccRecipients}`] : []),
+    ...(bccRecipients ? [`Bcc: ${bccRecipients}`] : []),
+    `Subject: ${subject}`,
+    "MIME-Version: 1.0",
+    `Content-Type: ${contentType}; charset=UTF-8`,
+    "",
+    body,
+  ];
+
+  return toBase64Url(
+    mimeLines.join("\r\n")
+  );
 };
 
 export const sendEmail = async (
