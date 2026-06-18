@@ -21,14 +21,70 @@ export default function Home() {
   router.refresh();
 }
   return (
-    <div>
-      Welcome to command-inbox!
-      <Button type="button" className="h-12 px-3 rounded-xl font-medium cursor-pointer bg-amber-700" onClick={()=>router.push("/auth/profile")}>View Profile</Button>
-      <Button type="button" className="h-12 px-3 rounded-xl font-medium cursor-pointer"
-      onClick={handleSignOut}
-      >
+  <main className="flex min-h-screen items-center justify-center bg-gradient-to-br from-background via-background to-muted/40 px-6">
+    <div className="w-full max-w-2xl rounded-3xl border bg-card p-10 shadow-lg">
+      <div className="space-y-4 text-center">
+        <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-primary text-primary-foreground text-2xl font-bold">
+          CI
+        </div>
+
+        <h1 className="text-4xl font-bold tracking-tight">
+          Command Inbox
+        </h1>
+
+        <p className="text-muted-foreground text-lg">
+          AI-powered Email & Calendar Assistant
+        </p>
+
+        <p className="mx-auto max-w-xl text-sm text-muted-foreground">
+          Manage emails, prioritize tasks, generate daily briefs,
+          schedule meetings, and stay organized with AI-powered
+          workflows built using Corsair, Gmail, and Google Calendar.
+        </p>
+      </div>
+
+      <div className="mt-10 flex flex-col gap-3 sm:flex-row sm:justify-center">
+        <Button
+          type="button"
+          size="lg"
+          className="cursor-pointer"
+          onClick={() => router.push("/inbox")}
+        >
+          Open Inbox
+        </Button>
+
+        <Button
+          type="button"
+          size="lg"
+          variant="outline"
+          className="cursor-pointer"
+          onClick={() => router.push("/agent")}
+        >
+          Open AI Assistant
+        </Button>
+
+        <Button
+          type="button"
+          size="lg"
+          variant="secondary"
+          className="cursor-pointer"
+          onClick={() => router.push("/auth/profile")}
+        >
+          View Profile
+        </Button>
+      </div>
+
+      <div className="mt-8 flex justify-center">
+        <Button
+          type="button"
+          variant="destructive"
+          className="cursor-pointer"
+          onClick={handleSignOut}
+        >
           Sign Out
-      </Button>
+        </Button>
+      </div>
     </div>
-  );
+  </main>
+);
 }
