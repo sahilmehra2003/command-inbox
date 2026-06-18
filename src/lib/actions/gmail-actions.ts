@@ -12,11 +12,11 @@ import {
     markImportant,
     unMarkImportant,
     sendEmail,
-    SendEmailInput,
     markAsUnread,
     spamMessage,
     removeSpam
-} from "@/lib/corsair/corsair-gmail-service";
+} from "@/lib/integrations/gmail/gmail.service";
+import { SendEmailInput } from "../integrations/gmail/gmail.types";
 
 
 export async function toggleStarAction(
