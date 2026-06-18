@@ -1,111 +1,6 @@
-import { corsair } from "@/server/corsair";
-
-
-export interface CalendarEvent {
-    id: string;
-    title: string;
-    description: string;
-    status: string;
-
-    start: string;
-    end: string;
-
-    htmlLink?: string;
-
-    createdAt?: string;
-    updatedAt?: string;
-}
-
-export interface CalendarEventsResponse {
-    events: CalendarEvent[];
-
-    summary?: string;
-    timeZone?: string;
-    nextSyncToken?: string;
-}
-
-
-
-export interface BusySlot {
-    start: string;
-    end: string;
-}
-
-export interface CalendarAvailability {
-    timeMin: string;
-    timeMax: string;
-    calendars: Record<
-        string,
-        {
-            busy: BusySlot[];
-        }
-    >;
-}
-
-export interface GetAvailabilityInput {
-    timeMin: string;
-    timeMax: string;
-}
-
-export interface CreateCalendarEventInput {
-    title: string;
-    description?: string;
-    location?: string;
-
-    start: string;
-    end: string;
-
-    attendees?: string[];
-}
-
-export interface UpdateCalendarEventInput {
-    eventId: string;
-
-    title?: string;
-    description?: string;
-    location?: string;
-
-    start?: string;
-    end?: string;
-
-    attendees?: string[];
-}
-
-export const transformCalendarEvent = (
-    event: any
-): CalendarEvent => {
-    return {
-        id: event.id ?? "",
-        title: event.summary ?? "Untitled Event",
-        description: event.description ?? "",
-        status: event.status ?? "",
-
-        start:
-            event.start?.dateTime ??
-            event.start?.date ??
-            "",
-
-        end:
-            event.end?.dateTime ??
-            event.end?.date ??
-            "",
-
-        htmlLink: event.htmlLink,
-
-        createdAt: event.created,
-        updatedAt: event.updated,
-    };
-};
-
-export const getTenant = async (tenantId: string) => {
-    const tenant = await corsair.withTenant(tenantId);
-
-    if (!tenant) {
-        throw new Error("Corsair account not found");
-    }
-    return tenant
-}
-
+import { getTenant } from "@/lib/corsair/get-tenant";
+import { BusySlot, CalendarAvailability, CalendarEvent, CalendarEventsResponse, CreateCalendarEventInput, GetAvailabilityInput, UpdateCalendarEventInput } from "./calendar.types";
+import { transformCalendarEvent } from "./calendar.transformer";
 
 export const getAllCalendarEvents = async (
     tenantId: string
@@ -161,7 +56,7 @@ export const createCalendarEvent = async (
                 },
 
                 attendees:
-                    input.attendees?.map((email) => ({
+                    input.attendees?.map((email: string) => ({
                         email,
                     })) ?? [],
             },
@@ -207,7 +102,7 @@ export const updateCalendarEvent = async (
 
                 ...(input.attendees && {
                     attendees: input.attendees.map(
-                        (email) => ({
+                        (email: string) => ({
                             email,
                         })
                     ),
@@ -238,9 +133,25 @@ export const getAvailability = async (
             timeMax,
         });
 
+    // Transform the calendars data to match your local interface
+    const normalizedCalendars: Record<string, { busy: BusySlot[] }> = {};
+
+    if (response.calendars) {
+        Object.entries(response.calendars).forEach(([key, value]) => {
+            normalizedCalendars[key] = {
+                // Filter ensures we only include valid objects if necessary
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                busy: (value.busy ?? []).map((slot: any) => ({
+                    start: slot.start ?? '',
+                    end: slot.end ?? ''
+                }))
+            };
+        });
+    }
+
     return {
         timeMin: response.timeMin ?? timeMin,
-        timeMax: response.timeMax! ?? timeMax,
-        calendars: response.calendars! ?? {},
+        timeMax: response.timeMax ?? timeMax,
+        calendars: normalizedCalendars,
     };
 };

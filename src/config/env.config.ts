@@ -10,7 +10,9 @@ const envSchema = z.object({
     GOOGLE_CLIENT_ID:z.string(),
     GOOGLE_CLIENT_SECRET:z.string(),
     RESEND_API_KEY:z.string(),
-    APP_URL:z.string()
+    APP_URL:z.string(),
+    OPENAI_API_KEY:z.string(),
+
 });
 
 export const env = envSchema.parse(process.env);

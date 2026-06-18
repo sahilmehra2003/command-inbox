@@ -34,9 +34,9 @@ export default async function InboxLayout({
         {children}
 
         <aside className="w-80 border-l">
-          {/* <CalendarSidebar
+          <CalendarSidebar
             events={calendarEvents.events}
-          /> */}
+          />
         </aside>
       </div>
 

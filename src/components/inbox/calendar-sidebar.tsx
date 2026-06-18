@@ -1,11 +1,12 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import {  useMemo, useState } from "react";
 import { Calendar } from "@/components/ui/calendar";
-import { CalendarEvent } from "@/lib/corsair/corsair-calendar-service";
+import { CalendarEvent } from "@/lib/integrations/calenadr/calendar.types"; 
 import { Button } from "@/components/ui/button";
 import { enUS } from "react-day-picker/locale/en-US";
 import { format } from "date-fns";
+import { cn } from "@/lib/utils";
 
 interface CalendarSidebarProps {
   events: CalendarEvent[];
@@ -51,7 +52,6 @@ const CalendarSidebar = ({
 
   return (
     <div className="flex h-full flex-col">
-      {/* Header */}
       <div className="border-b px-4 py-3">
         <h2 className="font-semibold">
           Calendar
@@ -88,12 +88,7 @@ const CalendarSidebar = ({
               todayEvents.map((event) => (
                 <button
                   key={event.id}
-                  className="
-                    flex w-full items-center gap-2
-                    rounded-md p-2 text-left
-                    hover:bg-muted
-                  "
-                >
+                  className={cn("flex w-full items-center gap-2 rounded-md p-2 text-left hover:bg-muted")}>
                   <div className="h-2 w-2 rounded-full bg-blue-500" />
 
                   <div className="min-w-0 flex-1">
@@ -126,12 +121,7 @@ const CalendarSidebar = ({
               upcomingEvents.map((event) => (
                 <button
                   key={event.id}
-                  className="
-                    flex w-full items-center gap-2
-                    rounded-md p-2 text-left
-                    hover:bg-muted
-                  "
-                >
+                  className={cn("flex w-full items-center gap-2 rounded-md p-2 text-left hover:bg-muted")}>
                   <div className="h-2 w-2 rounded-full bg-blue-500" />
 
                   <div className="min-w-0 flex-1">
