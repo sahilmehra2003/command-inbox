@@ -1,3 +1,6 @@
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+
 type WorkspaceStatusProps = {
   gmailConnected: boolean;
   calendarConnected: boolean;
@@ -35,8 +38,18 @@ export const WorkspaceStatus = ({
       </div>
 
       <div className="mt-5 rounded-lg bg-muted p-3 text-sm">
-        {connectedCount} of 2 integrations connected
-      </div>
+  {connectedCount} of 2 integrations connected
+</div>
+
+{connectedCount > 0 && (
+  <div className="mt-5 flex justify-center">
+    <Button asChild>
+      <Link href="/">
+       Go to home
+      </Link>
+    </Button>
+  </div>
+)}
     </section>
   );
 };

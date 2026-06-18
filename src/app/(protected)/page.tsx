@@ -47,6 +47,15 @@ export default function Home() {
         <Button
           type="button"
           size="lg"
+          variant="outline"
+          className="cursor-pointer"
+          onClick={() => router.push("/connected-workspace")}
+        >
+          Open Connected Workspace
+        </Button>
+        <Button
+          type="button"
+          size="lg"
           className="cursor-pointer"
           onClick={() => router.push("/inbox")}
         >

@@ -6,6 +6,7 @@ import { getCurrentUser } from "@/lib/auth/get-current-user";
 import { redirect } from "next/navigation";
 import { getConnectedIntegrations } from "@/lib/corsair/get-connected-integrations";
 
+
 export default async function ConnectWorkspacePage() {
 
   const user=await getCurrentUser();
