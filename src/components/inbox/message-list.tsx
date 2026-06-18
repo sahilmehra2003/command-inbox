@@ -37,9 +37,11 @@ const MessageList = async ({ messages }: InboxMessageListResponse) => {
                   {message.from}
                 </span>
 
-                <span className="text-xs text-muted-foreground whitespace-nowrap">
-                  {message.formattedDate}
-                </span>
+               <span className="text-xs text-muted-foreground whitespace-nowrap">
+  {message.formattedDate instanceof Date
+    ? message.formattedDate.toLocaleDateString()
+    : message.formattedDate ?? ""}
+</span>
               </div>
               <p className={`truncate ${message.isUnread ? "font-medium": "text-muted-foreground"}`}>
                 {message.subject}
