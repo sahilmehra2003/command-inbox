@@ -36,17 +36,11 @@ export async function POST(request: NextRequest) {
 
         // 
         const tenantCorsair = corsair.withTenant(user.id);
-        console.log(Object.keys(tenantCorsair));
         const tools = provider.build({
             corsair: tenantCorsair,
             tool,
             tenantId: user.id,
         });
-
-        console.log(
-            "Tools:",
-            tools.map((t) => t.name)
-        );
 
         const agent = new Agent({
             name: "command-inbox-agent",
@@ -82,7 +76,6 @@ export async function POST(request: NextRequest) {
         for (const item of result.state._generatedItems) {
             console.dir(item, { depth: null });
         }
-        console.log("result: ", result)
         return NextResponse.json({
             success: true,
             response: result.finalOutput,
@@ -92,7 +85,6 @@ export async function POST(request: NextRequest) {
             console.error(err.status, err.code, err.message, err.details);
 
         }
-        console.log("error is: ", error);
 
 
         return NextResponse.json(

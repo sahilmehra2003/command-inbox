@@ -22,9 +22,9 @@ const AgentPage = async() => {
     variant="outline"
     size="sm"
   >
-    <Link href="/inbox">
+    <Link href="/">
       <ArrowLeft className="mr-2 h-4 w-4" />
-      Back to Inbox
+      Back to Home
     </Link>
   </Button>
 

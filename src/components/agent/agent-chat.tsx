@@ -58,7 +58,6 @@ export function AgentChat({
       await runWorkflow(
         workflowId
       );
-    console.log("Result: ",result);
     addMessage({
       id: crypto.randomUUID(),
       role: "assistant",
@@ -102,12 +101,10 @@ export function AgentChat({
           "Create Meeting + Notify",
         createdAt: new Date(),
       });
-      console.log("input: ",input);
       const result =
         await createMeetingAndNotifyAction(
           input
         );
-        console.log("Result 2: ",result);
         if (!result.success) {
   addMessage({
     id: crypto.randomUUID(),

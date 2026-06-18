@@ -40,7 +40,7 @@ export default async function InboxLayout({
         </aside>
       </div>
 
-      <CommandBar />
+      {/* <CommandBar /> */}
     </div>
   );
 }

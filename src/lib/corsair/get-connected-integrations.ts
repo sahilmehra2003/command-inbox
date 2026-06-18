@@ -14,7 +14,6 @@ export const getConnectedIntegrations = async (userId: string) => {
             eq(corsairAccounts.integrationId, corsairIntegrations.id)
         )
         .where(eq(corsairAccounts.tenantId, userId))
-    console.log(integrations);
     return integrations;
 
 }

@@ -33,7 +33,6 @@ const ForgotPasswordPage = () => {
         }
     })
      async function onSubmit(data:ForgotPasswordInput) {
-         console.log("data: ",data);
           await authClient.requestPasswordReset({
             email:data.email,
             redirectTo:"/auth/reset-password",

@@ -1,10 +1,13 @@
 "use client";
 
 import { useState, KeyboardEvent } from "react";
-import { Search } from "lucide-react";
+import { ArrowLeft, Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { useRouter, useSearchParams } from "next/navigation";
 import { FILTER_QUERIES } from "@/lib/constants/mail-filters";
+import { Button } from "../ui/button";
+
+
 
 const TopNavbar = () => {
   const router = useRouter();
@@ -48,7 +51,15 @@ const TopNavbar = () => {
           />
         </div>
       </div>
-
+      
+      <Button
+      variant="outline"
+      size="sm"
+      onClick={() => router.push("/")}
+    >
+      <ArrowLeft className="mr-2 h-4 w-4" />
+      Back to Home
+    </Button>
       {/* Right Side Placeholder */}
       <div className="w-64" />
     </header>
