@@ -1,13 +1,12 @@
 "use client";
 
-import { useState } from "react";
 import { Send } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 
 import { useAgentStore } from "@/app/store/agent-store";
-import { AgentMessage } from "./agent-message";
+
 
 export function AgentInput() {
   const {

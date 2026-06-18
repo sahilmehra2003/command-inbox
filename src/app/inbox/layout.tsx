@@ -5,7 +5,7 @@ import CalendarSidebar from '@/components/inbox/calendar-sidebar'
 import CommandBar from '@/components/inbox/command-bar'
 import { getCurrentUser } from '@/lib/auth/get-current-user'
 import { redirect } from 'next/navigation'
-import { getAllCalendarEvents } from '@/lib/corsair/corsair-calendar-service'
+import { getAllCalendarEvents } from '@/lib/integrations/calenadr/calendar.service'
 export default async function InboxLayout({
   children,
 }: {

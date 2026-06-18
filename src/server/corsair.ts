@@ -1,6 +1,5 @@
 import { env } from "@/config/env.config";
 import { Pool } from 'pg';
-import { drizzle } from 'drizzle-orm/node-postgres';
 import { createCorsair } from 'corsair';
 import { gmail } from "@corsair-dev/gmail";
 import { googlecalendar } from "@corsair-dev/googlecalendar";

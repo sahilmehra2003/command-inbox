@@ -1,4 +1,4 @@
-import { GmailMessageDetail } from "@/lib/corsair/corsair-gmail-service";
+import { GmailMessageDetail } from "@/lib/integrations/gmail/gmail.types";
 import { create } from "zustand";
 
 interface MessageStore {

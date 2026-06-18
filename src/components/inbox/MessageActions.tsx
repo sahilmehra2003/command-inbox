@@ -9,7 +9,7 @@ import {
 } from "lucide-react";
 
 
-import { toggleArchiveAction, toggleStarAction, trashMessageAction,toggleImportantAction } from "@/lib/actions/gmail-actions";
+import { toggleArchiveAction, toggleStarAction, trashMessageAction} from "@/lib/actions/gmail-actions";
 import { useMessageStore } from "@/app/store/message-store";
 import { useComposeStore } from "@/app/store/compose-store";
 import DropDownMenuList from "./DropDownMenuList";

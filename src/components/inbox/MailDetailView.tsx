@@ -1,7 +1,9 @@
 
-import { GmailMessageDetail,markAsRead } from "@/lib/corsair/corsair-gmail-service";
 
+
+import { GmailMessageDetail } from "@/lib/integrations/gmail/gmail.types";
 import MediaDetailClient from "./MediaDetailClient";
+import { markAsRead } from "@/lib/integrations/gmail/gmail.service";
 
 
 interface MailDetailViewProps {

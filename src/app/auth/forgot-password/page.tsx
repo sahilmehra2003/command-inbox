@@ -20,8 +20,7 @@ import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { ForgotPasswordInput,forgotPasswordSchema } from "@/validators/auth.validator";
 import { authClient } from "@/lib/auth-client";
-import { email } from "zod";
-import { SuccessContext } from "better-auth/react";
+
 
 
 const ForgotPasswordPage = () => {

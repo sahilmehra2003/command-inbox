@@ -1,6 +1,6 @@
 import MailDetailView from "@/components/inbox/MailDetailView";
 import { getCurrentUser } from "@/lib/auth/get-current-user";
-import { getMessageById } from "@/lib/corsair/corsair-gmail-service";
+import { getMessageById } from "@/lib/integrations/gmail/gmail.service";
 import { redirect } from "next/navigation";
 
 interface Props {

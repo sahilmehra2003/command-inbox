@@ -6,17 +6,21 @@ import {
   ArrowLeft
 } from "lucide-react";
 
+
+
+import MessageActions from "./MessageActions";
+import { useRouter } from 'next/navigation';
+
+import ComposeDialog from './ComposeDialog';
+import { useMessageStore } from '@/app/store/message-store';
+import { useComposeStore } from '@/app/store/compose-store';
+import { GmailMessageDetail } from '@/lib/integrations/gmail/gmail.types';
+
+
 interface MailDetailViewProps {
   message: GmailMessageDetail;
   userId:string
 }
-
-import MessageActions from "./MessageActions";
-import { useRouter } from 'next/navigation';
-import { GmailMessageDetail } from '@/lib/corsair/corsair-gmail-service';
-import ComposeDialog from './ComposeDialog';
-import { useMessageStore } from '@/app/store/message-store';
-import { useComposeStore } from '@/app/store/compose-store';
 const MediaDetailClient = ({ message,
   userId}:MailDetailViewProps) => {
     const router=useRouter();

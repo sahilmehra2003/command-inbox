@@ -8,7 +8,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { composeEmailAction, sendEmailAction } from "@/lib/actions/gmail-actions";
-import { GmailMessageDetail } from "@/lib/corsair/corsair-gmail-service";
 import { useEffect, useState } from "react";
 import { useComposeStore } from "@/app/store/compose-store";
 

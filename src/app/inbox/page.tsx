@@ -1,6 +1,6 @@
 import MessageList from "@/components/inbox/message-list";
 import { getCurrentUser } from "@/lib/auth/get-current-user";
-import { getTenantMessageList } from "@/lib/corsair/corsair-gmail-service";
+import { getTenantMessageList } from "@/lib/integrations/gmail/gmail.service";
 import { redirect } from "next/navigation";
 import { FILTER_QUERIES } from "@/lib/constants/mail-filters";
 
